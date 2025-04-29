@@ -1,11 +1,7 @@
 ####
 # This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
 #
-# Before building the container image run:
-#
-# ./mvnw package
-#
-# Then, build the image with:
+# Build the image with:
 #
 # docker build -f src/main/docker/Dockerfile.jvm -t quarkus/validation-service-jvm .
 #
@@ -22,9 +18,6 @@
 #
 # docker run -i --rm -p 8080:8080 quarkus/validation-service-jvm
 #
-# This image uses the `run-java.sh` script to run the application.
-# This scripts computes the command line to execute your Java application, and
-# includes memory/GC tuning.
 # You can configure the behavior using the following environment properties:
 # - JAVA_OPTS: JVM options passed to the `java` command (example: "-verbose:class") - Be aware that this will override
 # the default JVM options, use `JAVA_OPTS_APPEND` to append options
@@ -78,21 +71,29 @@
 #   accessed directly. (example: "foo.example.com,bar.example.com")
 #
 ###
-FROM registry.access.redhat.com/ubi9/openjdk-21:1.21
+FROM maven:3-eclipse-temurin-21 AS build
+
+WORKDIR /validator
+
+COPY pom.xml pom.xml
+COPY src src
+
+RUN mvn package -DskipTests
+
+FROM eclipse-temurin:21-jdk-alpine
 
 ENV LANGUAGE='en_US:en'
 
 
 # We make four distinct layers so if there are application changes the library layers can be re-used
-COPY --chown=185 target/quarkus-app/lib/ /deployments/lib/
-COPY --chown=185 target/quarkus-app/*.jar /deployments/
-COPY --chown=185 target/quarkus-app/app/ /deployments/app/
-COPY --chown=185 target/quarkus-app/quarkus/ /deployments/quarkus/
+COPY --from=build --chown=185 validator/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=build --chown=185 validator/target/quarkus-app/*.jar /deployments/
+COPY --from=build --chown=185 validator/target/quarkus-app/app/ /deployments/app/
+COPY --from=build --chown=185 validator/target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER 185
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
-ENTRYPOINT [ "/opt/jboss/container/java/run/run-java.sh" ]
-
+ENTRYPOINT [ "java", "-jar", "/deployments/quarkus-run.jar"]

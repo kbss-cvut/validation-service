@@ -1,5 +1,8 @@
-*
-!target/*-runner
-!target/*-runner.jar
-!target/lib/*
-!target/quarkus-app/*
+target
+k6
+.idea
+license.txt
+.gitattributes
+.gitignore
+README.md
+quarkus.md
