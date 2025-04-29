@@ -112,7 +112,7 @@ public class ValidationService {
      * <p>
      * Presumably, these contexts contain vocabularies to validate. The language parameter specifies language for some
      * of the validation rules and specifies the primary language of the vocabularies.
-     *
+     * <p>
      * The rules parameter specifies the names of the rules to use. If no such rule is found, it is skipped.
      *
      * @param contexts Vocabulary contexts to validate
