@@ -1,0 +1,8 @@
+.idea
+*.iml
+target
+k6
+**/bundle.js
+**/generated-sources
+**/java-generated
+termit-doc.md
