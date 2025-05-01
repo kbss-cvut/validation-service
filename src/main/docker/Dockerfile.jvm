@@ -76,6 +76,9 @@ FROM maven:3-eclipse-temurin-21 AS build
 WORKDIR /validator
 
 COPY pom.xml pom.xml
+
+RUN mvn -B de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
+
 COPY src src
 
 RUN mvn package -DskipTests
@@ -96,4 +99,4 @@ USER 185
 ENV JAVA_OPTS_APPEND="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
 
-ENTRYPOINT [ "java", "-jar", "/deployments/quarkus-run.jar"]
+ENTRYPOINT [ "java", "-jar", "${JAVA_APP_JAR}"]
