@@ -29,6 +29,10 @@ public class ValidationReportSerializer extends JsonSerializer<ValidationReport>
                 }
                 gen.writeEndObject();
                 gen.writeStringField("focusNode", r.getFocusNode().toString());
+                gen.writeStringField("sourceShape", r.getSourceShape().getURI());
+                if (r.getPath() != null) {
+                    gen.writeStringField("path", r.getPath().getURI());
+                }
                 gen.writeEndObject();
             } catch (IOException e) {
                 throw new ValidatorException("Unable to serialize validation report.", e);
