@@ -49,6 +49,9 @@ public class ValidationService {
     @ConfigProperty(name = "validator.password")
     Optional<String> password;
 
+    @ConfigProperty(name = "validator.defaultLanguage", defaultValue = "cs")
+    String defaultLanguage;
+
     private final Validator validator = new Validator();
 
     private RepositoryManager repositoryManager;
@@ -91,7 +94,9 @@ public class ValidationService {
      */
     public ValidationReport validate(Collection<String> contexts, String language) {
         Objects.requireNonNull(contexts);
-        Objects.requireNonNull(language);
+        if (language == null) {
+            language = defaultLanguage;
+        }
         LOG.debug("Validating contexts '{}' with language '{}'.", contexts, language);
 
         final long start = System.currentTimeMillis();
@@ -121,7 +126,9 @@ public class ValidationService {
     public ValidationReport validateWithRules(Collection<String> contexts, Collection<String> rules, String language) {
         Objects.requireNonNull(contexts);
         Objects.requireNonNull(rules);
-        Objects.requireNonNull(language);
+        if (language == null) {
+            language = defaultLanguage;
+        }
         LOG.debug("Validating contexts '{}' with language '{}' using rules {}.", contexts, language, rules);
 
         final long start = System.currentTimeMillis();

@@ -2,7 +2,6 @@ package cz.cvut.kbss.validation;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -24,9 +23,9 @@ public class ValidationResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public ValidationReport validate(@QueryParam("contextUri") List<String> contextUris,
+    public ValidationReport validate(@QueryParam("vocabularyContextIri") List<String> contextUris,
                                      @QueryParam("rule") List<String> rules,
-                                     @QueryParam("language") @DefaultValue("cs") String language) {
+                                     @QueryParam("language") String language) {
         return executeValidation(contextUris, rules, language);
     }
 
@@ -41,9 +40,9 @@ public class ValidationResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public ValidationReport validateWithPost(@FormParam("contextUri") List<String> contextUris,
+    public ValidationReport validateWithPost(@FormParam("vocabularyContextIri") List<String> contextUris,
                                              @FormParam("rule") List<String> rules,
-                                             @FormParam("language") @DefaultValue("cs") String language) {
+                                             @FormParam("language") String language) {
         return executeValidation(contextUris, rules, language);
     }
 }
