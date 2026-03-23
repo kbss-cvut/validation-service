@@ -1,5 +1,6 @@
 package cz.cvut.kbss.validation;
 
+import cz.cvut.kbss.validation.model.ValidationReport;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.FormParam;
@@ -11,7 +12,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.topbraid.shacl.validation.ValidationReport;
 
 import java.util.List;
 

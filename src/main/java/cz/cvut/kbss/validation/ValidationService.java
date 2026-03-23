@@ -3,11 +3,13 @@ package cz.cvut.kbss.validation;
 import com.github.sgov.server.ValidationRules;
 import com.github.sgov.server.Validator;
 import cz.cvut.kbss.validation.exception.ValidatorException;
+import cz.cvut.kbss.validation.util.JenaReportMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Singleton;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.shacl.ValidationReport;
 import org.apache.jena.util.FileUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.rdf4j.model.IRI;
@@ -19,7 +21,6 @@ import org.eclipse.rdf4j.repository.manager.RepositoryManager;
 import org.eclipse.rdf4j.rio.turtle.TurtleWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.shacl.validation.ValidationReport;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -92,7 +93,7 @@ public class ValidationService {
      * @param contexts Vocabulary contexts to validate
      * @return Validation report
      */
-    public ValidationReport validate(Collection<String> contexts, String language) {
+    public cz.cvut.kbss.validation.model.ValidationReport validate(Collection<String> contexts, String language) {
         Objects.requireNonNull(contexts);
         if (language == null) {
             language = defaultLanguage;
@@ -104,12 +105,17 @@ public class ValidationService {
         final ValidationReport report = validator.validate(dataModel, language);
         dataModel.close();
         final long end = System.currentTimeMillis();
-        logFinish(end, start);
-        return report;
+        final cz.cvut.kbss.validation.model.ValidationReport r = mapReport(report);
+        logFinish(end, start, r);
+        return r;
     }
 
-    private static void logFinish(long end, long start) {
-        LOG.trace("Validation finished after {} ms.", end - start);
+    private static cz.cvut.kbss.validation.model.ValidationReport mapReport(ValidationReport report) {
+        return JenaReportMapper.map(report);
+    }
+
+    private static void logFinish(long end, long start, cz.cvut.kbss.validation.model.ValidationReport report) {
+        LOG.trace("Validation finished after {} ms with {} issues.", end - start, report.results().size());
     }
 
     /**
@@ -123,7 +129,8 @@ public class ValidationService {
      * @param contexts Vocabulary contexts to validate
      * @return Validation report
      */
-    public ValidationReport validateWithRules(Collection<String> contexts, Collection<String> rules, String language) {
+    public cz.cvut.kbss.validation.model.ValidationReport validateWithRules(Collection<String> contexts,
+                                                                            Collection<String> rules, String language) {
         Objects.requireNonNull(contexts);
         Objects.requireNonNull(rules);
         if (language == null) {
@@ -138,8 +145,9 @@ public class ValidationService {
         dataModel.close();
         ruleModel.close();
         final long end = System.currentTimeMillis();
-        logFinish(end, start);
-        return report;
+        final cz.cvut.kbss.validation.model.ValidationReport r = mapReport(report);
+        logFinish(end, start, r);
+        return r;
     }
 
     private Model loadRuleModel(Collection<String> rules, String language) {
