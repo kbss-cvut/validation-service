@@ -2,6 +2,7 @@ package cz.cvut.kbss.validation;
 
 import com.github.sgov.server.ValidationRules;
 import com.github.sgov.server.Validator;
+import cz.cvut.kbss.validation.exception.ValidationInputSizeThresholdExceededException;
 import cz.cvut.kbss.validation.exception.ValidatorException;
 import cz.cvut.kbss.validation.util.JenaReportMapper;
 import jakarta.annotation.PostConstruct;
@@ -53,6 +54,9 @@ public class ValidationService {
     @ConfigProperty(name = "validator.defaultLanguage", defaultValue = "cs")
     String defaultLanguage;
 
+    @ConfigProperty(name = "validator.inputSizeThreshold", defaultValue = "10000000")
+    int inputSizeThreshold;
+
     private final Validator validator = new Validator();
 
     private RepositoryManager repositoryManager;
@@ -102,6 +106,10 @@ public class ValidationService {
 
         final long start = System.currentTimeMillis();
         final Model dataModel = getModelFromRdf4jRepository(contexts);
+        if (dataModel.size() > inputSizeThreshold) {
+            throw new ValidationInputSizeThresholdExceededException(
+                    "Input size " + dataModel.size() + " exceeds threshold: " + inputSizeThreshold);
+        }
         final ValidationReport report = validator.validate(dataModel, language);
         dataModel.close();
         final long end = System.currentTimeMillis();
