@@ -106,10 +106,6 @@ public class ValidationService {
 
         final long start = System.currentTimeMillis();
         final Model dataModel = getModelFromRdf4jRepository(contexts);
-        if (dataModel.size() > inputSizeThreshold) {
-            throw new ValidationInputSizeThresholdExceededException(
-                    "Input size " + dataModel.size() + " exceeds threshold: " + inputSizeThreshold);
-        }
         final ValidationReport report = validator.validate(dataModel, language);
         dataModel.close();
         final long end = System.currentTimeMillis();
@@ -171,9 +167,16 @@ public class ValidationService {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final OutputStreamWriter writer = new OutputStreamWriter(baos, StandardCharsets.UTF_8);
         final ValueFactory vf = repository.getValueFactory();
+        final long start = System.currentTimeMillis();
         try (final RepositoryConnection c = repository.getConnection()) {
             final List<IRI> iris = new ArrayList<>();
             contextUris.forEach(i -> iris.add(vf.createIRI(i)));
+            final long size = c.size();
+            LOG.trace("Repository data size: {} triples.", size);
+            if (size > inputSizeThreshold) {
+                throw new ValidationInputSizeThresholdExceededException(
+                        "Input size " + size + " exceeds threshold: " + inputSizeThreshold);
+            }
             c.export(new TurtleWriter(writer), iris.toArray(new IRI[]{}));
             writer.close();
         } catch (IOException e) {
@@ -183,6 +186,8 @@ public class ValidationService {
         final ByteArrayInputStream is = new ByteArrayInputStream(savedData);
         Model model = ModelFactory.createDefaultModel();
         model.read(is, null, FileUtils.langTurtle);
+        final long loadEnd = System.currentTimeMillis();
+        LOG.trace("Repository data loaded in {} ms.", loadEnd - start);
         return model;
     }
 }
