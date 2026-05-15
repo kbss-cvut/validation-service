@@ -171,8 +171,8 @@ public class ValidationService {
         try (final RepositoryConnection c = repository.getConnection()) {
             final List<IRI> iris = new ArrayList<>();
             contextUris.forEach(i -> iris.add(vf.createIRI(i)));
-            final long size = c.size();
-            LOG.trace("Repository data size: {} triples.", size);
+            final long size = c.size(iris.toArray(new IRI[]{}));
+            LOG.trace("Size of repository contexts to validate: {} triples.", size);
             if (size > inputSizeThreshold) {
                 throw new ValidationInputSizeThresholdExceededException(
                         "Input size " + size + " exceeds threshold: " + inputSizeThreshold);
